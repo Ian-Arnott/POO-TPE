@@ -28,6 +28,7 @@ public class PaintPane extends BorderPane {
 	private final ToggleButton rectangleButton = new ToggleButton("Rectángulo");
 	private final ToggleButton circleButton = new ToggleButton("Círculo");
 	private final ToggleButton squareButton = new ToggleButton("Cuadrado");
+	private final ToggleButton ellipseButton = new ToggleButton("Elipse");
 	private final ToggleButton lineButton = new ToggleButton("Línea");
 
 	// Dibujar una figura
@@ -38,8 +39,8 @@ public class PaintPane extends BorderPane {
 
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
-		// StatusBar
-		ToggleButton[] toolsArr = {selectionButton, rectangleButton, circleButton, squareButton, lineButton};
+		ToggleButton[] toolsArr = {selectionButton, rectangleButton,
+				circleButton, squareButton, ellipseButton, lineButton};
 		ToggleGroup tools = new ToggleGroup();
 		for (ToggleButton tool : toolsArr) {
 			tool.setMinWidth(90);
@@ -71,6 +72,9 @@ public class PaintPane extends BorderPane {
 			}
 			else if(squareButton.isSelected() && validPoints(startPoint, endPoint)) {
 				newFigure = new Square(startPoint, endPoint);
+			}
+			else if(ellipseButton.isSelected() && validPoints(startPoint, endPoint)) {
+				newFigure = new Ellipse(startPoint, endPoint);
 			}
 			else {
 				return;
@@ -148,6 +152,13 @@ public class PaintPane extends BorderPane {
 					square.getBottomRight().setX(square.getBottomRight().getX() + diffX);
 					square.getBottomRight().setY(square.getBottomRight().getY() + diffY);
 				}
+				else if (selectedFigure != null && selectedFigure.getClass() == Ellipse.class) {
+					Ellipse ellipse = (Ellipse) selectedFigure;
+					ellipse.getTopLeft().setX(ellipse.getTopLeft().getX() + diffX);
+					ellipse.getTopLeft().setY(ellipse.getTopLeft().getY() + diffY);
+					ellipse.getBottomRight().setX(ellipse.getBottomRight().getX() + diffX);
+					ellipse.getBottomRight().setY(ellipse.getBottomRight().getY() + diffY);
+				}
 				redrawCanvas();
 			}
 		});
@@ -192,6 +203,11 @@ public class PaintPane extends BorderPane {
 				gc.strokeRect(square.getTopLeft().getX(),square.getTopLeft().getY(),
 						Math.abs(square.getTopLeft().getX() - square.getBottomRight().getX()), Math.abs(square.getTopLeft().getX() - square.getBottomRight().getX()));
 			}
+			else if (figure.getClass() == Ellipse.class) {
+				Ellipse ellipse = (Ellipse) figure;
+				gc.fillOval(ellipse.getTopLeft().getX(),ellipse.getTopLeft().getY(),(ellipse.getBottomRight().getX()-ellipse.getTopLeft().getX()),(ellipse.getBottomRight().getY()-ellipse.getTopLeft().getY()));
+				gc.strokeOval(ellipse.getTopLeft().getX(),ellipse.getTopLeft().getY(),(ellipse.getBottomRight().getX()-ellipse.getTopLeft().getX()),(ellipse.getBottomRight().getY()-ellipse.getTopLeft().getY()));
+			}
 		}
 	}
 
@@ -214,6 +230,11 @@ public class PaintPane extends BorderPane {
 			Square square = (Square) figure;
 			found = eventPoint.getX() > square.getTopLeft().getX() && eventPoint.getX() < square.getBottomRight().getX() &&
 					eventPoint.getY() > square.getTopLeft().getY() && eventPoint.getY() < square.getBottomRight().getY();
+		}
+		else if (figure.getClass() == Ellipse.class) {
+			Ellipse ellipse = (Ellipse) figure;
+			found = eventPoint.getX() > ellipse.getTopLeft().getX() && eventPoint.getX() < ellipse.getBottomRight().getX() &&
+					eventPoint.getY() > ellipse.getTopLeft().getY() && eventPoint.getY() < ellipse.getBottomRight().getY();
 		}
 		return found;
 	}
