@@ -2,7 +2,7 @@ package TPE.backend.model;
 
 public class Rectangle extends Figure {
 
-    private final Point topLeft, bottomRight;
+    protected final Point topLeft, bottomRight;
 
     public Rectangle(Point topLeft, Point bottomRight) {
         this.topLeft = topLeft;
