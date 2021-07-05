@@ -6,8 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -20,8 +19,6 @@ public class PaintPane extends BorderPane {
 	// Canvas y relacionados
 	private final Canvas canvas = new Canvas(800, 600);
 	private final GraphicsContext gc = canvas.getGraphicsContext2D();
-	private Color lineColor = Color.BLACK;
-	private Color fillColor = Color.YELLOW;
 
 	// Botones Barra Izquierda
 	private final ToggleButton selectionButton = new ToggleButton("Seleccionar");
@@ -37,6 +34,13 @@ public class PaintPane extends BorderPane {
 	// Seleccionar una figura
 	private Figure selectedFigure;
 
+	// Borde
+	private final Slider slider = new Slider(1, 50, 10);
+	private final ColorPicker borderColor = new ColorPicker();
+
+	// Relleno
+	private final ColorPicker fillColor = new ColorPicker();
+
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
 		ToggleButton[] toolsArr = {selectionButton, rectangleButton,
@@ -47,8 +51,25 @@ public class PaintPane extends BorderPane {
 			tool.setToggleGroup(tools);
 			tool.setCursor(Cursor.HAND);
 		}
+
+		// Slider de Borde, Colorpicker de Borde y Relleno Default
+		slider.setShowTickMarks(true);
+		slider.setShowTickLabels(true);
+		slider.setMajorTickUnit(25);
+		slider.setBlockIncrement(1);
+		slider.adjustValue(1);
+		borderColor.setValue(Color.BLACK);
+		fillColor.setValue(Color.YELLOW);
+
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
+		Label sliderLabel = new Label("Borde");
+		buttonsBox.getChildren().add(sliderLabel);
+		buttonsBox.getChildren().add(slider);
+		buttonsBox.getChildren().add(borderColor);
+		Label fillLabel = new Label("Relleno");
+		buttonsBox.getChildren().add(fillLabel);
+		buttonsBox.getChildren().add(fillColor);
 		buttonsBox.setPadding(new Insets(5));
 		buttonsBox.setStyle("-fx-background-color: #999");
 		buttonsBox.setPrefWidth(100);
@@ -61,20 +82,20 @@ public class PaintPane extends BorderPane {
 			}
 			Figure newFigure;
 			if(rectangleButton.isSelected() && validPoints(startPoint, endPoint)) {
-				newFigure = new Rectangle(startPoint, endPoint);
+				newFigure = new Rectangle(startPoint, endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
 			}
 			else if(circleButton.isSelected() && validPoints(startPoint, endPoint)) {
 				double circleRadius = Math.abs(endPoint.getX() - startPoint.getX());
-				newFigure = new Circle(startPoint, circleRadius);
+				newFigure = new Circle(startPoint, circleRadius, slider.getValue(),borderColor.getValue(), fillColor.getValue());
 			}
 			else if (lineButton.isSelected()){
-				newFigure = new Line(startPoint,endPoint);
+				newFigure = new Line(startPoint,endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
 			}
 			else if(squareButton.isSelected() && validPoints(startPoint, endPoint)) {
-				newFigure = new Square(startPoint, endPoint);
+				newFigure = new Square(startPoint, endPoint, slider.getValue(),borderColor.getValue(), fillColor.getValue());
 			}
 			else if(ellipseButton.isSelected() && validPoints(startPoint, endPoint)) {
-				newFigure = new Ellipse(startPoint, endPoint);
+				newFigure = new Ellipse(startPoint, endPoint, slider.getValue(),borderColor.getValue(), fillColor.getValue());
 			}
 			else {
 				return;
@@ -176,9 +197,10 @@ public class PaintPane extends BorderPane {
 			if(figure == selectedFigure) {
 				gc.setStroke(Color.RED);
 			} else {
-				gc.setStroke(lineColor);
+				gc.setStroke(figure.getLineColor());
 			}
-			gc.setFill(fillColor);
+			gc.setFill(figure.getFillColor());
+			gc.setLineWidth(figure.getWidth());
 			if(figure.getClass() == Rectangle.class) {
 				Rectangle rectangle = (Rectangle) figure;
 				gc.fillRect(rectangle.getTopLeft().getX(), rectangle.getTopLeft().getY(),

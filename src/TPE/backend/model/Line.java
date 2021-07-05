@@ -1,9 +1,11 @@
 package TPE.backend.model;
 
+import javafx.scene.paint.Color;
+
 public class Line extends Rectangle{
 
-    public Line(Point topLeft, Point bottomRight) {
-        super(topLeft, bottomRight);
+    public Line(Point topLeft, Point bottomRight, double width, Color lineColor, Color fillColor) {
+        super(topLeft, bottomRight,width, lineColor, fillColor);
     }
 
     @Override
