@@ -53,13 +53,32 @@ public class PaintPane extends BorderPane {
 		}
 
 		// Slider de Borde, Colorpicker de Borde y Relleno Default
+		// Tambien listeners para los que estan seleccionados
+		slider.valueProperty().addListener((observableValue, number, t1) -> {
+			if (selectionButton.isSelected() && selectedFigure != null) {
+				selectedFigure.setWidth(slider.getValue());
+			}
+			redrawCanvas();
+		});
 		slider.setShowTickMarks(true);
 		slider.setShowTickLabels(true);
 		slider.setMajorTickUnit(25);
 		slider.setBlockIncrement(1);
 		slider.adjustValue(1);
 		borderColor.setValue(Color.BLACK);
+		borderColor.valueProperty().addListener((observableValue, color, t1) -> {
+			if (selectionButton.isSelected() && selectedFigure != null) {
+				selectedFigure.setLineColor(borderColor.getValue());
+			}
+			redrawCanvas();
+		});
 		fillColor.setValue(Color.YELLOW);
+		fillColor.valueProperty().addListener((observableValue, color, t1) -> {
+			if (selectionButton.isSelected() && selectedFigure != null) {
+				selectedFigure.setFillColor(fillColor.getValue());
+			}
+			redrawCanvas();
+		});
 
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
@@ -107,13 +126,15 @@ public class PaintPane extends BorderPane {
 		canvas.setOnMouseMoved(event -> {
 			eventPoint = new Point(event.getX(), event.getY());
 			boolean found = false;
+			Figure aux = null;
 			StringBuilder label = new StringBuilder();
 			for(Figure figure : canvasState.figures()) {
 				if(figureBelongs(figure, eventPoint)) {
 					found = true;
-					label.append(figure);
+					aux = figure;
 				}
 			}
+			label.append(aux);
 			if(found) {
 				statusPane.updateStatus(label.toString());
 			} else {
@@ -130,9 +151,10 @@ public class PaintPane extends BorderPane {
 					if(figureBelongs(figure, eventPoint)) {
 						found = true;
 						selectedFigure = figure;
-						label.append(figure);
 					}
 				}
+				label.append(selectedFigure);
+
 				if (found) {
 					statusPane.updateStatus(label.toString());
 				} else {
