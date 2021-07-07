@@ -33,6 +33,7 @@ public class PaintPane extends BorderPane {
 
 	// Seleccionar una figura
 	private Figure selectedFigure;
+	private final CanvasState selectedFigures = new CanvasState();
 
 	// Borde
 	private final Slider slider = new Slider(1, 50, 10);
@@ -43,8 +44,9 @@ public class PaintPane extends BorderPane {
 
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
+		ToggleButton deleteButton = new ToggleButton("Borrar");
 		ToggleButton[] toolsArr = {selectionButton, rectangleButton,
-				circleButton, squareButton, ellipseButton, lineButton};
+				circleButton, squareButton, ellipseButton, lineButton, deleteButton};
 		ToggleGroup tools = new ToggleGroup();
 		for (ToggleButton tool : toolsArr) {
 			tool.setMinWidth(90);
@@ -55,8 +57,15 @@ public class PaintPane extends BorderPane {
 		// Slider de Borde, Colorpicker de Borde y Relleno Default
 		// Tambien listeners para los que estan seleccionados
 		slider.valueProperty().addListener((observableValue, number, t1) -> {
-			if (selectionButton.isSelected() && selectedFigure != null) {
-				selectedFigure.setWidth(slider.getValue());
+			if (selectionButton.isSelected()) {
+				if(selectedFigure != null){
+					selectedFigure.setWidth(slider.getValue());
+				}
+				if (!selectedFigures.isEmpty()){
+					for (Figure figure : selectedFigures.figures()){
+						figure.setWidth(slider.getValue());
+					}
+				}
 			}
 			redrawCanvas();
 		});
@@ -67,17 +76,46 @@ public class PaintPane extends BorderPane {
 		slider.adjustValue(1);
 		borderColor.setValue(Color.BLACK);
 		borderColor.valueProperty().addListener((observableValue, color, t1) -> {
-			if (selectionButton.isSelected() && selectedFigure != null) {
-				selectedFigure.setLineColor(borderColor.getValue());
+			if (selectionButton.isSelected()) {
+				if(selectedFigure != null){
+					selectedFigure.setLineColor(borderColor.getValue());
+				}
+				if (!selectedFigures.isEmpty()){
+					for (Figure figure : selectedFigures.figures()){
+						figure.setLineColor(borderColor.getValue());
+					}
+				}
 			}
 			redrawCanvas();
 		});
 		fillColor.setValue(Color.YELLOW);
 		fillColor.valueProperty().addListener((observableValue, color, t1) -> {
-			if (selectionButton.isSelected() && selectedFigure != null) {
-				selectedFigure.setFillColor(fillColor.getValue());
+			if (selectionButton.isSelected()) {
+				if(selectedFigure != null){
+					selectedFigure.setFillColor(fillColor.getValue());
+				}
+				if (!selectedFigures.isEmpty()){
+					for (Figure figure : selectedFigures.figures()){
+						figure.setFillColor(fillColor.getValue());
+					}
+				}
 			}
 			redrawCanvas();
+		});
+
+		// Borrar
+		deleteButton.selectedProperty().addListener(observable -> {
+			if (selectedFigure != null){
+				canvasState.removeFigure(selectedFigure);
+				redrawCanvas();
+			}
+			if (!selectedFigures.isEmpty()){
+				for (Figure figure : selectedFigures.figures()){
+					canvasState.removeFigure(figure);
+				}
+				redrawCanvas();
+				selectedFigures.removeAll();
+			}
 		});
 
 		VBox buttonsBox = new VBox(10);
@@ -99,6 +137,17 @@ public class PaintPane extends BorderPane {
 			if(startPoint == null) {
 				return;
 			}
+			if (selectionButton.isSelected() && validPoints(startPoint, endPoint)){
+				for (Figure figure : canvasState.figures()){
+					if (isWithin(figure)){
+						selectedFigures.addFigure(figure);
+					}
+				}
+			}
+			else {
+				selectedFigures.removeAll();
+				redrawCanvas();
+			}
 			Figure newFigure;
 			if(rectangleButton.isSelected() && validPoints(startPoint, endPoint)) {
 				newFigure = new Rectangle(startPoint, endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
@@ -107,8 +156,13 @@ public class PaintPane extends BorderPane {
 				double circleRadius = Math.abs(endPoint.getX() - startPoint.getX());
 				newFigure = new Circle(startPoint, circleRadius, slider.getValue(),borderColor.getValue(), fillColor.getValue());
 			}
-			else if (lineButton.isSelected()){
-				newFigure = new Line(startPoint,endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
+			else if(lineButton.isSelected()){
+				if(validPoints(startPoint, endPoint)) {
+					newFigure = new Line(startPoint,endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
+				}
+				else {
+					newFigure = new Line(endPoint,startPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
+				}
 			}
 			else if(squareButton.isSelected() && validPoints(startPoint, endPoint)) {
 				newFigure = new Square(startPoint, endPoint, slider.getValue(),borderColor.getValue(), fillColor.getValue());
@@ -137,7 +191,8 @@ public class PaintPane extends BorderPane {
 			label.append(aux);
 			if(found) {
 				statusPane.updateStatus(label.toString());
-			} else {
+			}
+			else {
 				statusPane.updateStatus(eventPoint.toString());
 			}
 		});
@@ -151,13 +206,14 @@ public class PaintPane extends BorderPane {
 					if(figureBelongs(figure, eventPoint)) {
 						found = true;
 						selectedFigure = figure;
+						selectedFigures.removeAll();
 					}
 				}
 				label.append(selectedFigure);
-
 				if (found) {
 					statusPane.updateStatus(label.toString());
-				} else {
+				}
+				else {
 					selectedFigure = null;
 					statusPane.updateStatus("Ninguna figura encontrada");
 				}
@@ -169,38 +225,13 @@ public class PaintPane extends BorderPane {
 				eventPoint = new Point(event.getX(), event.getY());
 				double diffX = (eventPoint.getX() - startPoint.getX()) / 100;
 				double diffY = (eventPoint.getY() - startPoint.getY()) / 100;
-				if(selectedFigure != null && selectedFigure.getClass() == Rectangle.class) {
-					Rectangle rectangle = (Rectangle) selectedFigure;
-					rectangle.getTopLeft().setX(rectangle.getTopLeft().getX() + diffX);
-					rectangle.getBottomRight().setX(rectangle.getBottomRight().getX() + diffX);
-					rectangle.getTopLeft().setY(rectangle.getTopLeft().getY() + diffY);
-					rectangle.getBottomRight().setY(rectangle.getBottomRight().getY() + diffY);
+				if (selectedFigure != null){
+					selectedFigure.moveFigure(diffX, diffY);
 				}
-				else if(selectedFigure != null && selectedFigure.getClass() == Circle.class) {
-					Circle circle = (Circle) selectedFigure;
-					circle.getCenterPoint().setX(circle.getCenterPoint().getX() + diffX);
-					circle.getCenterPoint().setY(circle.getCenterPoint().getY() + diffY);
-				}
-				else if (selectedFigure != null && selectedFigure.getClass() == Line.class) {
-					Line line = (Line) selectedFigure;
-					line.getTopLeft().setX(line.getTopLeft().getX() + diffX);
-					line.getTopLeft().setY(line.getTopLeft().getY() + diffY);
-					line.getBottomRight().setX(line.getBottomRight().getX() + diffX);
-					line.getBottomRight().setY(line.getBottomRight().getY() + diffY);
-				}
-				else if (selectedFigure != null && selectedFigure.getClass() == Square.class) {
-					Square square = (Square) selectedFigure;
-					square.getTopLeft().setX(square.getTopLeft().getX() + diffX);
-					square.getTopLeft().setY(square.getTopLeft().getY() + diffY);
-					square.getBottomRight().setX(square.getBottomRight().getX() + diffX);
-					square.getBottomRight().setY(square.getBottomRight().getY() + diffY);
-				}
-				else if (selectedFigure != null && selectedFigure.getClass() == Ellipse.class) {
-					Ellipse ellipse = (Ellipse) selectedFigure;
-					ellipse.getTopLeft().setX(ellipse.getTopLeft().getX() + diffX);
-					ellipse.getTopLeft().setY(ellipse.getTopLeft().getY() + diffY);
-					ellipse.getBottomRight().setX(ellipse.getBottomRight().getX() + diffX);
-					ellipse.getBottomRight().setY(ellipse.getBottomRight().getY() + diffY);
+				if (!selectedFigures.isEmpty()){
+					for (Figure figure : selectedFigures.figures() ){
+						figure.moveFigure(diffX, diffY);
+					}
 				}
 				redrawCanvas();
 			}
@@ -209,14 +240,46 @@ public class PaintPane extends BorderPane {
 		setRight(canvas);
 	}
 
-	private boolean validPoints(Point startPoint, Point endPoint){
+	private boolean isWithin(Figure figure) {
+		boolean within = false;
+		if (figure.getClass() == Rectangle.class){
+			Rectangle rectangle = (Rectangle) figure;
+			within = startPoint.getX() < rectangle.getTopLeft().getX() && endPoint.getX() > rectangle.getBottomRight().getX() &&
+					startPoint.getY() < rectangle.getTopLeft().getY() && endPoint.getY() > rectangle.getBottomRight().getY();
+		}
+		else if(figure.getClass() == Circle.class) {
+			Circle circle = (Circle) figure;
+			within = startPoint.getX() < circle.getCenterPoint().getX() - circle.getRadius()
+					&& startPoint.getY() < circle.getCenterPoint().getY() - circle.getRadius()
+					&& endPoint.getX() > circle.getCenterPoint().getX() + circle.getRadius()
+					&& endPoint.getY() > circle.getCenterPoint().getY() + circle.getRadius();
+		}
+		else if (figure.getClass() == Ellipse.class){
+			Ellipse ellipse = (Ellipse) figure;
+			within = startPoint.getX() < ellipse.getTopLeft().getX() && endPoint.getX() > ellipse.getBottomRight().getX() &&
+					startPoint.getY() < ellipse.getTopLeft().getY() && endPoint.getY() > ellipse.getBottomRight().getY();
+		}
+		else if (figure.getClass() == Square.class){
+			Square square = (Square) figure;
+			within = startPoint.getX() < square.getTopLeft().getX() && endPoint.getX() > square.getTopLeft().getX() + square.getSideLength() &&
+					startPoint.getY() < square.getTopLeft().getY() && endPoint.getY() > square.getTopLeft().getY() + square.getSideLength();
+		}
+		else if (figure.getClass() == Line.class){
+			Line line = (Line) figure;
+			within = startPoint.getX() < line.getTopLeft().getX() && endPoint.getX() > line.getBottomRight().getX() &&
+					startPoint.getY() < line.getTopLeft().getY() && endPoint.getY() > line.getBottomRight().getY();
+		}
+		return within;
+	}
+
+	private static boolean validPoints(Point startPoint, Point endPoint){
 		return !(endPoint.getX() < startPoint.getX()) && !(endPoint.getY() < startPoint.getY());
 	}
 
 	private void redrawCanvas() {
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		for(Figure figure : canvasState.figures()) {
-			if(figure == selectedFigure) {
+			if(figure == selectedFigure || selectedFigures.containsFigure(figure)) {
 				gc.setStroke(Color.RED);
 			} else {
 				gc.setStroke(figure.getLineColor());
@@ -243,9 +306,9 @@ public class PaintPane extends BorderPane {
 			else if (figure.getClass() == Square.class) {
 				Square square = (Square) figure;
 				gc.fillRect(square.getTopLeft().getX(),square.getTopLeft().getY(),
-						Math.abs(square.getTopLeft().getX() - square.getBottomRight().getX()), Math.abs(square.getTopLeft().getX() - square.getBottomRight().getX()));
+						square.getSideLength(), square.getSideLength());
 				gc.strokeRect(square.getTopLeft().getX(),square.getTopLeft().getY(),
-						Math.abs(square.getTopLeft().getX() - square.getBottomRight().getX()), Math.abs(square.getTopLeft().getX() - square.getBottomRight().getX()));
+						square.getSideLength(), square.getSideLength());
 			}
 			else if (figure.getClass() == Ellipse.class) {
 				Ellipse ellipse = (Ellipse) figure;
@@ -261,24 +324,26 @@ public class PaintPane extends BorderPane {
 			Rectangle rectangle = (Rectangle) figure;
 			found = eventPoint.getX() > rectangle.getTopLeft().getX() && eventPoint.getX() < rectangle.getBottomRight().getX() &&
 					eventPoint.getY() > rectangle.getTopLeft().getY() && eventPoint.getY() < rectangle.getBottomRight().getY();
-		} else if(figure.getClass() == Circle.class) {
+		}
+		else if(figure.getClass() == Circle.class) {
 			Circle circle = (Circle) figure;
 			found = Math.sqrt(Math.pow(circle.getCenterPoint().getX() - eventPoint.getX(), 2) +
 					Math.pow(circle.getCenterPoint().getY() - eventPoint.getY(), 2)) < circle.getRadius();
-		} else if (figure.getClass() == Line.class) {
+		}
+		else if (figure.getClass() == Line.class) {
 			Line line = (Line) figure;
-			found = eventPoint.getX() > line.getTopLeft().getX() && eventPoint.getX() < line.getBottomRight().getX() &&
-					eventPoint.getY() > line.getTopLeft().getY() && eventPoint.getY() < line.getBottomRight().getY();
+			found = (Line.distance(line.getTopLeft(),eventPoint)+Line.distance(line.getBottomRight(),eventPoint)) < 1+line.getDistance()
+					&& (Line.distance(line.getTopLeft(),eventPoint)+Line.distance(line.getBottomRight(),eventPoint)) > -1+line.getDistance();
 		}
 		else if (figure.getClass() == Square.class) {
 			Square square = (Square) figure;
-			found = eventPoint.getX() > square.getTopLeft().getX() && eventPoint.getX() < square.getBottomRight().getX() &&
-					eventPoint.getY() > square.getTopLeft().getY() && eventPoint.getY() < square.getBottomRight().getY();
+			found = eventPoint.getX() > square.getTopLeft().getX() && eventPoint.getX() < square.getTopLeft().getX() + square.getSideLength() &&
+					eventPoint.getY() > square.getTopLeft().getY() && eventPoint.getY() < square.getTopLeft().getY() + square.getSideLength();
 		}
 		else if (figure.getClass() == Ellipse.class) {
 			Ellipse ellipse = (Ellipse) figure;
-			found = eventPoint.getX() > ellipse.getTopLeft().getX() && eventPoint.getX() < ellipse.getBottomRight().getX() &&
-					eventPoint.getY() > ellipse.getTopLeft().getY() && eventPoint.getY() < ellipse.getBottomRight().getY();
+			found = ((Math.pow((eventPoint.getX()-ellipse.getCenter().getX()),2))/Math.pow(ellipse.getSmajor(),2) +
+					(Math.pow((eventPoint.getY()-ellipse.getCenter().getY()),2))/Math.pow(ellipse.getSminor(),2))<= 1;
 		}
 		return found;
 	}
