@@ -45,11 +45,13 @@ public class PaintPane extends BorderPane {
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
 		ToggleButton deleteButton = new ToggleButton("Borrar");
+		ToggleButton backButton = new ToggleButton("Al Fondo");
+		ToggleButton frontButton = new ToggleButton("Al Frente");
 		ToggleButton[] toolsArr = {selectionButton, rectangleButton,
-				circleButton, squareButton, ellipseButton, lineButton, deleteButton};
+				circleButton, squareButton, ellipseButton, lineButton, deleteButton, backButton, frontButton};
 		ToggleGroup tools = new ToggleGroup();
 		for (ToggleButton tool : toolsArr) {
-			tool.setMinWidth(90);
+			tool.setMinWidth(95);
 			tool.setToggleGroup(tools);
 			tool.setCursor(Cursor.HAND);
 		}
@@ -61,7 +63,7 @@ public class PaintPane extends BorderPane {
 				if(selectedFigure != null){
 					selectedFigure.setWidth(slider.getValue());
 				}
-				if (!selectedFigures.isEmpty()){
+				if (selectedFigures.notEmpty()){
 					for (Figure figure : selectedFigures.figures()){
 						figure.setWidth(slider.getValue());
 					}
@@ -80,7 +82,7 @@ public class PaintPane extends BorderPane {
 				if(selectedFigure != null){
 					selectedFigure.setLineColor(borderColor.getValue());
 				}
-				if (!selectedFigures.isEmpty()){
+				if (selectedFigures.notEmpty()){
 					for (Figure figure : selectedFigures.figures()){
 						figure.setLineColor(borderColor.getValue());
 					}
@@ -94,7 +96,7 @@ public class PaintPane extends BorderPane {
 				if(selectedFigure != null){
 					selectedFigure.setFillColor(fillColor.getValue());
 				}
-				if (!selectedFigures.isEmpty()){
+				if (selectedFigures.notEmpty()){
 					for (Figure figure : selectedFigures.figures()){
 						figure.setFillColor(fillColor.getValue());
 					}
@@ -109,7 +111,7 @@ public class PaintPane extends BorderPane {
 				canvasState.removeFigure(selectedFigure);
 				redrawCanvas();
 			}
-			if (!selectedFigures.isEmpty()){
+			if (selectedFigures.notEmpty()){
 				for (Figure figure : selectedFigures.figures()){
 					canvasState.removeFigure(figure);
 				}
@@ -117,6 +119,29 @@ public class PaintPane extends BorderPane {
 				selectedFigures.removeAll();
 			}
 		});
+
+		// Llevar al fondo y al frente
+		backButton.setOnAction(actionEvent -> {
+			if (selectedFigure != null){
+				canvasState.moveFigureBackwards(selectedFigure);
+				redrawCanvas();
+			}
+			if (selectedFigures.notEmpty()){
+				canvasState.moveFigureBackwards(selectedFigures);
+				redrawCanvas();
+			}
+		});
+		frontButton.setOnAction(actionEvent -> {
+			if (selectedFigure != null){
+				canvasState.moveFigureForwards(selectedFigure);
+				redrawCanvas();
+			}
+			if (selectedFigures.notEmpty()){
+				canvasState.moveFigureForwards(selectedFigures);
+				redrawCanvas();
+			}
+		});
+
 
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
@@ -138,6 +163,10 @@ public class PaintPane extends BorderPane {
 				return;
 			}
 			if (selectionButton.isSelected() && validPoints(startPoint, endPoint)){
+				if (selectedFigures.notEmpty()){
+					selectedFigures.removeAll();
+					redrawCanvas();
+				}
 				for (Figure figure : canvasState.figures()){
 					if (isWithin(figure)){
 						selectedFigures.addFigure(figure);
@@ -228,7 +257,7 @@ public class PaintPane extends BorderPane {
 				if (selectedFigure != null){
 					selectedFigure.moveFigure(diffX, diffY);
 				}
-				if (!selectedFigures.isEmpty()){
+				if (selectedFigures.notEmpty()){
 					for (Figure figure : selectedFigures.figures() ){
 						figure.moveFigure(diffX, diffY);
 					}
