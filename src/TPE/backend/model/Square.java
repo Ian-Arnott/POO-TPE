@@ -20,4 +20,9 @@ public class Square extends Rectangle{
         return String.format("Cuadrado [ %s , %s ]", topLeft, new Point(getTopLeft().getX() + sideLength, topLeft.getY() + sideLength));
     }
 
+    @Override
+    public Figure makeCopy() {
+        return new Square(topLeft,bottomRight,getWidth(),getLineColor(),getFillColor());
+    }
+
 }

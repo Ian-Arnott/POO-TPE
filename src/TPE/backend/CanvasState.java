@@ -1,6 +1,6 @@
 package TPE.backend;
 
-import TPE.backend.model.Figure;
+import TPE.backend.model.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CanvasState {
 
-    private final List<Figure> list = new ArrayList<>();
+    private List<Figure> list = new ArrayList<>();
 
     public void addFigure(Figure figure) {
         list.add(figure);
@@ -74,5 +74,17 @@ public class CanvasState {
                 i++;
             }
         }
+    }
+
+    public List<Figure> copyState() {
+        List<Figure> toReturn = new ArrayList<>();
+        for (Figure figure : list){
+            toReturn.add(figure.makeCopy());
+        }
+        return toReturn;
+    }
+
+    public void setState(List<Figure> figures) {
+        list = figures;
     }
 }

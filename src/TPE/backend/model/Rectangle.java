@@ -25,4 +25,16 @@ public class Rectangle extends Figure {
         return String.format("Rectángulo [ %s , %s ]", topLeft, bottomRight);
     }
 
+    @Override
+    public Figure makeCopy() {
+        return new Rectangle(topLeft,bottomRight,getWidth(),getLineColor(),getFillColor());
+    }
+
+    @Override
+    public void moveFigure(double diffX, double diffY) {
+        topLeft.setX(topLeft.getX() + diffX);
+        topLeft.setY(topLeft.getY() + diffY);
+        bottomRight.setX(bottomRight.getX() + diffX);
+        bottomRight.setY(bottomRight.getY() + diffY);
+    }
 }

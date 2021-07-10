@@ -10,11 +10,16 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PaintPane extends BorderPane {
 
 	// BackEnd
 	private final CanvasState canvasState;
+	// Listas para rehacer y deshacer
+	private final List<List<Figure>> undoCanvas = new ArrayList<>();
+	private final List<List<Figure>> redoCanvas = new ArrayList<>();
 
 	// Canvas y relacionados
 	private final Canvas canvas = new Canvas(800, 600);
@@ -47,8 +52,11 @@ public class PaintPane extends BorderPane {
 		ToggleButton deleteButton = new ToggleButton("Borrar");
 		ToggleButton backButton = new ToggleButton("Al Fondo");
 		ToggleButton frontButton = new ToggleButton("Al Frente");
+		ToggleButton undoButton = new ToggleButton("Deshacer");
+		ToggleButton redoButton = new ToggleButton("Rehacer");
 		ToggleButton[] toolsArr = {selectionButton, rectangleButton,
-				circleButton, squareButton, ellipseButton, lineButton, deleteButton, backButton, frontButton};
+				circleButton, squareButton, ellipseButton, lineButton,
+				deleteButton, backButton, frontButton, undoButton, redoButton};
 		ToggleGroup tools = new ToggleGroup();
 		for (ToggleButton tool : toolsArr) {
 			tool.setMinWidth(95);
@@ -80,9 +88,13 @@ public class PaintPane extends BorderPane {
 		borderColor.valueProperty().addListener((observableValue, color, t1) -> {
 			if (selectionButton.isSelected()) {
 				if(selectedFigure != null){
+					undoCanvas.add(canvasState.copyState());
+					redoCanvas.removeAll(redoCanvas);
 					selectedFigure.setLineColor(borderColor.getValue());
 				}
 				if (selectedFigures.notEmpty()){
+					undoCanvas.add(canvasState.copyState());
+					redoCanvas.removeAll(redoCanvas);
 					for (Figure figure : selectedFigures.figures()){
 						figure.setLineColor(borderColor.getValue());
 					}
@@ -94,9 +106,13 @@ public class PaintPane extends BorderPane {
 		fillColor.valueProperty().addListener((observableValue, color, t1) -> {
 			if (selectionButton.isSelected()) {
 				if(selectedFigure != null){
+					undoCanvas.add(canvasState.copyState());
+					redoCanvas.removeAll(redoCanvas);
 					selectedFigure.setFillColor(fillColor.getValue());
 				}
 				if (selectedFigures.notEmpty()){
+					undoCanvas.add(canvasState.copyState());
+					redoCanvas.removeAll(redoCanvas);
 					for (Figure figure : selectedFigures.figures()){
 						figure.setFillColor(fillColor.getValue());
 					}
@@ -108,10 +124,14 @@ public class PaintPane extends BorderPane {
 		// Borrar
 		deleteButton.selectedProperty().addListener(observable -> {
 			if (selectedFigure != null){
+				undoCanvas.add(canvasState.copyState());
+				redoCanvas.removeAll(redoCanvas);
 				canvasState.removeFigure(selectedFigure);
 				redrawCanvas();
 			}
 			if (selectedFigures.notEmpty()){
+				undoCanvas.add(canvasState.copyState());
+				redoCanvas.removeAll(redoCanvas);
 				for (Figure figure : selectedFigures.figures()){
 					canvasState.removeFigure(figure);
 				}
@@ -123,21 +143,45 @@ public class PaintPane extends BorderPane {
 		// Llevar al fondo y al frente
 		backButton.setOnAction(actionEvent -> {
 			if (selectedFigure != null){
+				undoCanvas.add(canvasState.copyState());
+				redoCanvas.removeAll(redoCanvas);
 				canvasState.moveFigureBackwards(selectedFigure);
 				redrawCanvas();
 			}
 			if (selectedFigures.notEmpty()){
+				undoCanvas.add(canvasState.copyState());
+				redoCanvas.removeAll(redoCanvas);
 				canvasState.moveFigureBackwards(selectedFigures);
 				redrawCanvas();
 			}
 		});
 		frontButton.setOnAction(actionEvent -> {
 			if (selectedFigure != null){
+				undoCanvas.add(canvasState.copyState());
+				redoCanvas.removeAll(redoCanvas);
 				canvasState.moveFigureForwards(selectedFigure);
 				redrawCanvas();
 			}
 			if (selectedFigures.notEmpty()){
+				undoCanvas.add(canvasState.copyState());
+				redoCanvas.removeAll(redoCanvas);
 				canvasState.moveFigureForwards(selectedFigures);
+				redrawCanvas();
+			}
+		});
+
+		// Deshacer y rehacer
+		undoButton.setOnAction(actionEvent -> {
+			if (!undoCanvas.isEmpty()){
+				redoCanvas.add(canvasState.copyState());
+				canvasState.setState(undoCanvas.remove(undoCanvas.size()-1));
+				redrawCanvas();
+			}
+		});
+		redoButton.setOnAction(actionEvent -> {
+			if (!redoCanvas.isEmpty()){
+				undoCanvas.add(canvasState.copyState());
+				canvasState.setState(redoCanvas.remove(redoCanvas.size()-1));
 				redrawCanvas();
 			}
 		});
@@ -202,6 +246,8 @@ public class PaintPane extends BorderPane {
 			else {
 				return;
 			}
+			undoCanvas.add(canvasState.copyState());
+			redoCanvas.removeAll(redoCanvas);
 			canvasState.addFigure(newFigure);
 			startPoint = null;
 			redrawCanvas();

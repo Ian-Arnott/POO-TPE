@@ -4,7 +4,7 @@ import javafx.scene.paint.Color;
 
 public class Ellipse extends Rectangle{
 
-    private Point center;
+    private final Point center;
     private final double sminor ,smajor;
 
     public Ellipse(Point topLeft, Point bottomRight, double width, Color lineColor, Color fillColor) {
@@ -31,4 +31,15 @@ public class Ellipse extends Rectangle{
         return String.format("Elipse [Centro: %s]", center);
     }
 
+    @Override
+    public Figure makeCopy() {
+        return new Ellipse(topLeft,bottomRight,getWidth(),getLineColor(),getFillColor());
+    }
+
+    @Override
+    public void moveFigure(double diffX, double diffY) {
+        super.moveFigure(diffX, diffY);
+        center.setX(center.getX() + diffX);
+        center.setY(center.getY() + diffY);
+    }
 }

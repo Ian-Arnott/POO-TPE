@@ -23,4 +23,9 @@ public class Line extends Rectangle{
     public String toString() {
         return String.format("Linea [ %s , %s ]", topLeft, bottomRight);
     }
+
+    @Override
+    public Figure makeCopy() {
+        return new Line(topLeft,bottomRight,getWidth(),getLineColor(),getFillColor());
+    }
 }
