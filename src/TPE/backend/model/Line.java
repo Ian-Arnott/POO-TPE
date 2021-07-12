@@ -11,14 +11,6 @@ public class Line extends Rectangle{
         distance = Math.sqrt(Math.pow((bottomRight.getX()-topLeft.getX()),2)-Math.pow((bottomRight.getY()-topLeft.getY()),2));
     }
 
-    public static double distance(Point a, Point b){
-        return Math.sqrt(Math.pow((b.getX()-a.getX()),2)-Math.pow((b.getY()-a.getY()),2));
-    }
-
-    public double getDistance() {
-        return distance;
-    }
-
     @Override
     public String toString() {
         return String.format("Linea [ %s , %s ]", topLeft, bottomRight);
@@ -27,5 +19,11 @@ public class Line extends Rectangle{
     @Override
     public Figure makeCopy() {
         return new Line(topLeft,bottomRight,getWidth(),getLineColor(),getFillColor());
+    }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return Math.abs((point.getY() - topLeft.getY()) * (bottomRight.getX() - topLeft.getX())
+                - (point.getX() - topLeft.getX()) * (bottomRight.getY() - topLeft.getY())) <= distance;
     }
 }

@@ -31,6 +31,18 @@ public class Rectangle extends Figure {
     }
 
     @Override
+    public boolean containsPoint(Point point) {
+        return point.getX() > topLeft.getX() && point.getX() < bottomRight.getX() &&
+                point.getY() > topLeft.getY() && point.getY() < bottomRight.getY();
+    }
+
+    @Override
+    public boolean isWithin(Point p1, Point p2) {
+        return p1.getX() < topLeft.getX() && p2.getX() > bottomRight.getX() &&
+                p1.getY() < topLeft.getY() && p2.getY() > bottomRight.getY();
+    }
+
+    @Override
     public void moveFigure(double diffX, double diffY) {
         topLeft.setX(topLeft.getX() + diffX);
         topLeft.setY(topLeft.getY() + diffY);

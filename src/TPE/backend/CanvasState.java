@@ -83,7 +83,6 @@ public class CanvasState {
         }
         return toReturn;
     }
-
     public void setState(List<Figure> figures) {
         list = figures;
     }

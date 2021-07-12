@@ -42,4 +42,10 @@ public class Ellipse extends Rectangle{
         center.setX(center.getX() + diffX);
         center.setY(center.getY() + diffY);
     }
+
+    @Override
+    public boolean containsPoint(Point point) {
+        return ((Math.pow((point.getX()-center.getX()),2))/Math.pow(smajor,2) +
+                (Math.pow((point.getY()-center.getY()),2))/Math.pow(sminor,2))<= 1;
+    }
 }

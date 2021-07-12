@@ -38,6 +38,10 @@ public abstract class Figure {
         this.lineColor = lineColor;
     }
 
+    public abstract boolean containsPoint(Point point);
+
+    public abstract boolean isWithin(Point p1, Point p2);
+
     public abstract void moveFigure(double diffX, double diffY);
 
     public abstract Figure makeCopy();
