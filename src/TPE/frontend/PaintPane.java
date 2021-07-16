@@ -186,7 +186,6 @@ public class PaintPane extends BorderPane {
 			}
 		});
 
-
 		VBox buttonsBox = new VBox(10);
 		buttonsBox.getChildren().addAll(toolsArr);
 		Label sliderLabel = new Label("Borde");
@@ -221,19 +220,12 @@ public class PaintPane extends BorderPane {
 				else {
 						selectedFigures.removeAll();
 					}
-				Figure newFigure;
+				Figure newFigure = null;
 				if (rectangleButton.isSelected() && validPoints(startPoint, endPoint)) {
 					newFigure = new Rectangle(startPoint, endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
-					undoCanvas.add(canvasState.copyState());
-					redoCanvas.removeAll(redoCanvas);
-					canvasState.addFigure(newFigure);
 				}
 				else if (circleButton.isSelected() && validPoints(startPoint, endPoint)) {
-					double circleRadius = Math.abs(endPoint.getX() - startPoint.getX());
-					newFigure = new Circle(startPoint, circleRadius, slider.getValue(), borderColor.getValue(), fillColor.getValue());
-					undoCanvas.add(canvasState.copyState());
-					redoCanvas.removeAll(redoCanvas);
-					canvasState.addFigure(newFigure);
+					newFigure = new Circle(startPoint, endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
 				}
 				else if (lineButton.isSelected()) {
 					if (validPoints(startPoint, endPoint)) {
@@ -241,22 +233,16 @@ public class PaintPane extends BorderPane {
 					} else {
 						newFigure = new Line(endPoint, startPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
 					}
-					undoCanvas.add(canvasState.copyState());
-					redoCanvas.removeAll(redoCanvas);
-					canvasState.addFigure(newFigure);
 				}
 				else if (squareButton.isSelected() && validPoints(startPoint, endPoint)) {
 					newFigure = new Square(startPoint, endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
-					undoCanvas.add(canvasState.copyState());
-					redoCanvas.removeAll(redoCanvas);
-					canvasState.addFigure(newFigure);
 				}
 				else if (ellipseButton.isSelected() && validPoints(startPoint, endPoint)) {
 					newFigure = new Ellipse(startPoint, endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
-					undoCanvas.add(canvasState.copyState());
-					redoCanvas.removeAll(redoCanvas);
-					canvasState.addFigure(newFigure);
 				}
+				undoCanvas.add(canvasState.copyState());
+				redoCanvas.removeAll(redoCanvas);
+				canvasState.addFigure(newFigure);
 			}
 			startPoint = null;
 			redrawCanvas();
@@ -371,6 +357,5 @@ public class PaintPane extends BorderPane {
 			}
 		}
 	}
-
 
 }

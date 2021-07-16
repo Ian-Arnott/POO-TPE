@@ -10,12 +10,12 @@ public class CanvasState {
 
     private List<Figure> list = new ArrayList<>();
 
-    public void addFigure(Figure figure) {
-        list.add(figure);
+    public boolean addFigure(Figure figure) {
+        return list.add(figure);
     }
 
-    public void removeFigure(Figure figure){
-        list.remove(figure);
+    public boolean removeFigure(Figure figure){
+        return list.remove(figure);
     }
 
     public boolean containsFigure(Figure figure){
@@ -36,7 +36,7 @@ public class CanvasState {
 
     public void moveFigureBackwards(Figure selectedFigure) {
         int i = list.indexOf(selectedFigure);
-        if (list.indexOf(selectedFigure)!=0){
+        if (i!=0){
             Collections.swap(list,i,i-1);
         }
     }
@@ -58,7 +58,7 @@ public class CanvasState {
 
     public void moveFigureForwards(Figure selectedFigure) {
         int i = list.indexOf(selectedFigure);
-        if (list.indexOf(selectedFigure)!= list.size()-1){
+        if (i!= list.size()-1){
             Collections.swap(list,i,i+1);
         }
     }

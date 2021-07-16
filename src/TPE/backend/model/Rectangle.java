@@ -2,6 +2,8 @@ package TPE.backend.model;
 
 import javafx.scene.paint.Color;
 
+import java.util.Objects;
+
 public class Rectangle extends Figure {
 
     protected final Point topLeft, bottomRight;
@@ -32,8 +34,8 @@ public class Rectangle extends Figure {
 
     @Override
     public boolean containsPoint(Point point) {
-        return point.getX() > topLeft.getX() && point.getX() < bottomRight.getX() &&
-                point.getY() > topLeft.getY() && point.getY() < bottomRight.getY();
+        return point.getX() >= topLeft.getX() && point.getX() <= bottomRight.getX() &&
+                point.getY() >= topLeft.getY() && point.getY() <= bottomRight.getY();
     }
 
     @Override
@@ -48,5 +50,19 @@ public class Rectangle extends Figure {
         topLeft.setY(topLeft.getY() + diffY);
         bottomRight.setX(bottomRight.getX() + diffX);
         bottomRight.setY(bottomRight.getY() + diffY);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Rectangle)) return false;
+        if (!super.equals(o)) return false;
+        Rectangle rectangle = (Rectangle) o;
+        return topLeft.equals(rectangle.topLeft) && bottomRight.equals(rectangle.bottomRight);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), topLeft, bottomRight);
     }
 }
