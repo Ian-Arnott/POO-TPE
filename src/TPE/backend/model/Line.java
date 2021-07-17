@@ -8,7 +8,7 @@ public class Line extends Rectangle{
 
     public Line(Point topLeft, Point bottomRight, double width, Color lineColor, Color fillColor) {
         super(topLeft, bottomRight,width, lineColor, fillColor);
-        distance = Math.sqrt(Math.pow((bottomRight.getX()-topLeft.getX()),2)-Math.pow((bottomRight.getY()-topLeft.getY()),2));
+        distance = Math.sqrt(Math.pow((bottomRight.getX()-topLeft.getX()),2)+Math.pow((bottomRight.getY()-topLeft.getY()),2));
     }
 
     @Override
@@ -23,7 +23,8 @@ public class Line extends Rectangle{
 
     @Override
     public boolean containsPoint(Point point) {
-        return Math.abs((point.getY() - topLeft.getY()) * (bottomRight.getX() - topLeft.getX())
-                - (point.getX() - topLeft.getX()) * (bottomRight.getY() - topLeft.getY())) <= distance;
+        double crossProduct = (point.getY() - topLeft.getY()) * (bottomRight.getX() - topLeft.getX())
+                - (point.getX() - topLeft.getX()) * (bottomRight.getY() - topLeft.getY());
+        return Math.abs(crossProduct) < distance;
     }
 }

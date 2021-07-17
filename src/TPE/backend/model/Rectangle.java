@@ -34,8 +34,8 @@ public class Rectangle extends Figure {
 
     @Override
     public boolean containsPoint(Point point) {
-        return point.getX() >= topLeft.getX() && point.getX() <= bottomRight.getX() &&
-                point.getY() >= topLeft.getY() && point.getY() <= bottomRight.getY();
+        return point.getX() > topLeft.getX() && point.getX() < bottomRight.getX() &&
+                point.getY() > topLeft.getY() && point.getY() < bottomRight.getY();
     }
 
     @Override
@@ -55,9 +55,8 @@ public class Rectangle extends Figure {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Rectangle)) return false;
+        if (!(o instanceof Rectangle rectangle)) return false;
         if (!super.equals(o)) return false;
-        Rectangle rectangle = (Rectangle) o;
         return topLeft.equals(rectangle.topLeft) && bottomRight.equals(rectangle.bottomRight);
     }
 

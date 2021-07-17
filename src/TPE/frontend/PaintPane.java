@@ -44,9 +44,13 @@ public class PaintPane extends BorderPane {
 	// Borde
 	private final Slider slider = new Slider(1, 50, 10);
 	private final ColorPicker borderColor = new ColorPicker();
+	private static final int INITIAL_WIDTH = 1;
+	private static final Color INITIAL_BORDER_COLOR = Color.BLACK;
 
 	// Relleno
 	private final ColorPicker fillColor = new ColorPicker();
+	private static final Color INITIAL_FILL_COLOR = Color.YELLOW;
+
 
 	public PaintPane(CanvasState canvasState, StatusPane statusPane) {
 		this.canvasState = canvasState;
@@ -83,9 +87,9 @@ public class PaintPane extends BorderPane {
 		slider.setShowTickLabels(true);
 		slider.setMajorTickUnit(25);
 		slider.setBlockIncrement(1);
-		slider.adjustValue(1);
-		borderColor.setValue(Color.BLACK);
-		borderColor.valueProperty().addListener((observableValue, color, t1) -> {
+		slider.adjustValue(INITIAL_WIDTH);
+		borderColor.setValue(INITIAL_BORDER_COLOR);
+		borderColor.setOnAction(actionEvent -> {
 			if (selectionButton.isSelected()) {
 				if(selectedFigure != null){
 					undoCanvas.add(canvasState.copyState());
@@ -102,8 +106,8 @@ public class PaintPane extends BorderPane {
 			}
 			redrawCanvas();
 		});
-		fillColor.setValue(Color.YELLOW);
-		fillColor.valueProperty().addListener((observableValue, color, t1) -> {
+		fillColor.setValue(INITIAL_FILL_COLOR);
+		fillColor.setOnAction(actionEvent -> {
 			if (selectionButton.isSelected()) {
 				if(selectedFigure != null){
 					undoCanvas.add(canvasState.copyState());
@@ -122,7 +126,7 @@ public class PaintPane extends BorderPane {
 		});
 
 		// Borrar
-		deleteButton.selectedProperty().addListener(observable -> {
+		deleteButton.setOnAction(actionEvent -> {
 			if (selectedFigure != null){
 				undoCanvas.add(canvasState.copyState());
 				redoCanvas.removeAll(redoCanvas);
@@ -218,8 +222,8 @@ public class PaintPane extends BorderPane {
 					statusPane.updateStatus(label.toString());
 				}
 				else {
-						selectedFigures.removeAll();
-					}
+					selectedFigures.removeAll();
+				}
 				Figure newFigure;
 				if (rectangleButton.isSelected() && validPoints(startPoint, endPoint)) {
 					newFigure = new Rectangle(startPoint, endPoint, slider.getValue(), borderColor.getValue(), fillColor.getValue());
